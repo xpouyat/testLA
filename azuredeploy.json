@@ -22,7 +22,7 @@
       "apiVersion": "2016-06-01",
       "name": "[parameters('logicAppName')]",
       "dependsOn": [],
-      "location": "[resourceGroup().location]",
+      "location": "[[parameters('siteLocation')]",
       "properties": {
         "definition": {
           "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
