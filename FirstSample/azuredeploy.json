@@ -255,7 +255,7 @@
                     "host": {
                       "triggerName": "manual",
                       "workflow": {
-                        "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Logic/workflows/', parameters('checkJoblogicAppName')]"
+                        "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Logic/workflows/', parameters('checkJoblogicAppName'))]"
                        // "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/WE/providers/Microsoft.Logic/workflows/test-jobcheck2"
                       }
                     }
