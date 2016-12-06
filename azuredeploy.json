@@ -4,6 +4,15 @@
   "parameters": {
     "logicAppName": {
       "type": "string"
+    },
+    "SubscriptionId": {
+      "type": "string"
+    },
+    "FunctionsDeploymentResourceGroup": {
+      "type": "string"
+    },
+    "FunctionsDeploymentName": {
+      "type": "string"
     }
   },
   "variables": {},
@@ -61,7 +70,7 @@
                   "JobId": "@{triggerBody()['JobId']}"
                 },
                 "function": {
-                  "id": "/subscriptions/parameters('subscriptionid')/resourceGroups/parameters('functionsdeploymentresource')/providers/Microsoft.Web/sites/[parameters('functionsdeploymentname')]/functions/LA-3-CheckJobStatus"
+                  "id": "/subscriptions/[parameters('SubscriptionId')]/resourceGroups/[parameters('FunctionsDeploymentResourceGroup')]/providers/Microsoft.Web/sites/[parameters('FunctionsDeploymentName')]/functions/LA-3-CheckJobStatus"
                 }
               }
             },
