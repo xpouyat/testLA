@@ -1,0 +1,93 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('logicAppName')]",
+      "dependsOn": [],
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {
+                  "properties": {
+                    "JobId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "JobId"
+                  ],
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "actions": {
+            "Delay": {
+              "runAfter": {},
+              "type": "Wait",
+              "inputs": {
+                "interval": {
+                  "count": 15,
+                  "unit": "Second"
+                }
+              }
+            },
+            "LA-3-CheckJobStatus": {
+              "runAfter": {
+                "Delay": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "JobId": "@{triggerBody()['JobId']}"
+                },
+                "function": {
+                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/LA-AMS/functions/LA-3-CheckJobStatus"
+                }
+              }
+            },
+            "Response": {
+              "runAfter": {
+                "LA-3-CheckJobStatus": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Response",
+              "inputs": {
+                "body": {
+                  "JobState": "@body('LA-3-CheckJobStatus')['JobState']"
+                },
+                "headers": {
+                  "content-type": "application/json"
+                },
+                "statusCode": 200
+              }
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {}
+      }
+    }
+  ],
+  "outputs": {}
+}
