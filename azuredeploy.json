@@ -61,7 +61,7 @@
                   "JobId": "@{triggerBody()['JobId']}"
                 },
                 "function": {
-                  "id": "/subscriptions/[parameters('subscriptionid')]/resourceGroups/[parameters('functionsdeploymentresource')]/providers/Microsoft.Web/sites/[parameters('functionsdeploymentname')]/functions/LA-3-CheckJobStatus"
+                  "id": "/subscriptions/parameters('subscriptionid')/resourceGroups/parameters('functionsdeploymentresource')/providers/Microsoft.Web/sites/[parameters('functionsdeploymentname')]/functions/LA-3-CheckJobStatus"
                 }
               }
             },
