@@ -5,9 +5,6 @@
     "logicAppName": {
       "type": "string"
     },
-    "subscriptionId": {
-      "type": "string"
-    },
     "functionsDeploymentResourceGroup": {
       "type": "string"
     },
@@ -70,7 +67,7 @@
                   "JobId": "@{triggerBody()['JobId']}"
                 },
                 "function": {
-                  "id": "[concat('/subscriptions/', parameters('subscriptionId'), '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-3-CheckJobStatus')]"
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-3-CheckJobStatus')]"
                 }
               }
             },
