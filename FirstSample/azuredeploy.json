@@ -2,7 +2,7 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "logicAppName": {
+    "checkJoblogicAppName": {
       "type": "string"
     },
     "functionsDeploymentResourceGroup": {
@@ -32,7 +32,7 @@
     {
       "type": "Microsoft.Logic/workflows",
       "apiVersion": "2016-06-01",
-      "name": "[parameters('logicAppName')]",
+      "name": "[parameters('checkJoblogicAppName')]",
       "dependsOn": [],
       "location": "[resourceGroup().location]",
       "properties": {
@@ -164,7 +164,7 @@
                       "AssetId": "@{body('LA-3-SubmitJob')['OutputAssetId']}"
                     },
                     "function": {
-                      "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-5-Publish"
+                      "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-5-Publish')]"
                     }
                   }
                 }
@@ -207,7 +207,7 @@
                   "FileName": "@{triggerOutputs()['headers']['x-ms-file-name']}"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-1-CreateEmptyAsset"
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-1-CreateEmptyAsset')]"
                 }
               }
             },
@@ -223,7 +223,7 @@
                   "AssetId": "@{body('LA-1-CreateEmptyAsset')['AssetId']}"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-2-SyncAsset"
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-2-SyncAsset')]"
                 }
               }
             },
@@ -239,7 +239,7 @@
                   "AssetId": "@{body('LA-1-CreateEmptyAsset')['AssetId']}"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-3-SubmitJob"
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-3-SubmitJob')]"
                 }
               }
             },
@@ -255,7 +255,8 @@
                     "host": {
                       "triggerName": "manual",
                       "workflow": {
-                        "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/WE/providers/Microsoft.Logic/workflows/test-jobcheck2"
+                        "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup(), '/providers/Microsoft.Logic/workflows/', parameters('checkJoblogicAppName')]"
+                       // "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/WE/providers/Microsoft.Logic/workflows/test-jobcheck2"
                       }
                     }
                   }
