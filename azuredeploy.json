@@ -5,13 +5,13 @@
     "logicAppName": {
       "type": "string"
     },
-    "SubscriptionId": {
+    "subscriptionId": {
       "type": "string"
     },
-    "FunctionsDeploymentResourceGroup": {
+    "functionsDeploymentResourceGroup": {
       "type": "string"
     },
-    "FunctionsDeploymentName": {
+    "functionsDeploymentName": {
       "type": "string"
     }
   },
@@ -70,7 +70,7 @@
                   "JobId": "@{triggerBody()['JobId']}"
                 },
                 "function": {
-                  "id": "/subscriptions/[parameters('SubscriptionId')]/resourceGroups/[parameters('FunctionsDeploymentResourceGroup')]/providers/Microsoft.Web/sites/[parameters('FunctionsDeploymentName')]/functions/LA-3-CheckJobStatus"
+                  "id": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('functionsDeploymentResourceGroup')]/providers/Microsoft.Web/sites/[parameters('functionsDeploymentName')]/functions/LA-3-CheckJobStatus"
                 }
               }
             },
