@@ -1,0 +1,328 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "checkJoblogicAppName": {
+      "type": "string"
+    },
+    "functionsDeploymentResourceGroup": {
+      "type": "string"
+    },
+    "functionsDeploymentName": {
+      "type": "string"
+    },
+    "mainLogicAppName": {
+      "type": "string"
+    },
+    "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblobaccountName": {
+      "type": "string"
+    },
+    "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblobaccessKey": {
+      "type": "securestring"
+    },
+    "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblobName": {
+      "type": "string"
+    },
+    "onedriveName": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('checkJoblogicAppName')]",
+      "dependsOn": [],
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {
+                  "properties": {
+                    "JobId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "JobId"
+                  ],
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "actions": {
+            "Delay": {
+              "runAfter": {},
+              "type": "Wait",
+              "inputs": {
+                "interval": {
+                  "count": 15,
+                  "unit": "Second"
+                }
+              }
+            },
+            "LA-3-CheckJobStatus": {
+              "runAfter": {
+                "Delay": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "JobId": "@{triggerBody()['JobId']}"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-3-CheckJobStatus')]"
+                }
+              }
+            },
+            "Response": {
+              "runAfter": {
+                "LA-3-CheckJobStatus": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Response",
+              "inputs": {
+                "body": {
+                  "JobState": "@body('LA-3-CheckJobStatus')['JobState']"
+                },
+                "headers": {
+                  "content-type": "application/json"
+                },
+                "statusCode": 200
+              }
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {}
+      }
+    },
+
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('mainLogicAppName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', parameters('/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblobName'))]",
+        "[resourceId('Microsoft.Web/connections', parameters('onedriveName'))]"
+      ],
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "When_a_file_is_created": {
+              "recurrence": {
+                "frequency": "Minute",
+                "interval": 1
+              },
+              "metadata": {
+                "A56BE8B37BAEFEF9!282842": "/Oslo Demo"
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['onedrive']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/datasets/default/triggers/onnewfile",
+                "queries": {
+                  "folderId": "A56BE8B37BAEFEF9!282842"
+                }
+              }
+            }
+          },
+          "actions": {
+            "Condition": {
+              "actions": {
+                "LA-5-Publish": {
+                  "runAfter": {},
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "AssetId": "@{body('LA-3-SubmitJob')['OutputAssetId']}"
+                    },
+                    "function": {
+                      "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-5-Publish')]"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Until": [
+                  "Succeeded"
+                ]
+              },
+              "expression": "@equals(body('test-jobcheck2')['JobState'], 3)",
+              "type": "If"
+            },
+            "Create_blob": {
+              "runAfter": {
+                "LA-1-CreateEmptyAsset": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ApiConnection",
+              "inputs": {
+                "body": "@triggerBody()",
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblob']['connectionId']"
+                  }
+                },
+                "method": "post",
+                "path": "/datasets/default/files",
+                "queries": {
+                  "folderPath": "@{body('LA-1-CreateEmptyAsset')['FolderPath']}",
+                  "name": "@{triggerOutputs()['headers']['x-ms-file-name']}"
+                }
+              }
+            },
+            "LA-1-CreateEmptyAsset": {
+              "runAfter": {},
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "FileName": "@{triggerOutputs()['headers']['x-ms-file-name']}"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-1-CreateEmptyAsset')]"
+                }
+              }
+            },
+            "LA-2-SyncAsset": {
+              "runAfter": {
+                "Create_blob": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "AssetId": "@{body('LA-1-CreateEmptyAsset')['AssetId']}"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-2-SyncAsset')]"
+                }
+              }
+            },
+            "LA-3-SubmitJob": {
+              "runAfter": {
+                "LA-2-SyncAsset": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "AssetId": "@{body('LA-1-CreateEmptyAsset')['AssetId']}"
+                },
+                "function": {
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-3-SubmitJob')]"
+                }
+              }
+            },
+            "Until": {
+              "actions": {
+                "test-jobcheck2": {
+                  "runAfter": {},
+                  "type": "Workflow",
+                  "inputs": {
+                    "body": {
+                      "JobId": "@{body('LA-3-SubmitJob')['JobId']}"
+                    },
+                    "host": {
+                      "triggerName": "manual",
+                      "workflow": {
+                        "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Logic/workflows/', parameters('checkJoblogicAppName'))]"
+                      }
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "LA-3-SubmitJob": [
+                  "Succeeded"
+                ]
+              },
+              "expression": "@greater(body('test-jobcheck2')['JobState'], 2)",
+              "limit": {
+                "count": 60,
+                "timeout": "PT1H"
+              },
+              "type": "Until"
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblob": {
+                "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azureblob')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblobName'))]"
+              },
+              "onedrive": {
+                "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/onedrive')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('onedriveName'))]"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "location": "[resourceGroup().location]",
+      "name": "[parameters('onedriveName')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/onedrive')]"
+        },
+        "displayName": "onedrive",
+        "parameterValues": {}
+      }
+    },
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "location": "[resourceGroup().location]",
+      "name": "[parameters('/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblobName')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azureblob')]"
+        },
+        "displayName": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblob",
+        "parameterValues": {
+          "accountName": "[parameters('/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblobaccountName')]",
+          "accessKey": "[parameters('/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblobaccessKey')]"
+        }
+      }
+    }
+
+
+  ],
+  "outputs": {}
+}
