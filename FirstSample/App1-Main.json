@@ -1,0 +1,209 @@
+{
+    "$connections": {
+        "value": {
+            "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblob": {
+                "connectionId": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/connections/azureblob-3",
+                "connectionName": "azureblob-3",
+                "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblob"
+            },
+            "onedrive": {
+                "connectionId": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/connections/onedrive-1",
+                "connectionName": "onedrive-1",
+                "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/onedrive"
+            },
+            "twilio": {
+                "connectionId": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/connections/twilio-1",
+                "connectionName": "twilio-1",
+                "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/twilio"
+            }
+        }
+    },
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Condition": {
+                "actions": {
+                    "LA-5-Publish": {
+                        "inputs": {
+                            "body": {
+                                "AssetId": "@{body('LA-3-SubmitJob')['OutputAssetId']}"
+                            },
+                            "function": {
+                                "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-5-Publish"
+                            }
+                        },
+                        "runAfter": {},
+                        "type": "Function"
+                    },
+                    "Send_Text_Message_(SMS)": {
+                        "inputs": {
+                            "body": {
+                                "body": "Video encoded. Playback link: @{body('LA-5-Publish')['PlayerUrl']}",
+                                "from": "+1 415-941-6536         ",
+                                "to": "+33664406536"
+                            },
+                            "host": {
+                                "api": {
+                                    "runtimeUrl": "https://logic-apis-westeurope.azure-apim.net/apim/twilio"
+                                },
+                                "connection": {
+                                    "name": "@parameters('$connections')['twilio']['connectionId']"
+                                }
+                            },
+                            "method": "post",
+                            "path": "/Messages.json"
+                        },
+                        "runAfter": {
+                            "LA-5-Publish": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "ApiConnection"
+                    }
+                },
+                "expression": "@equals(body('test-jobcheck2')['JobState'], 3)",
+                "runAfter": {
+                    "Until": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "If"
+            },
+            "Create_blob": {
+                "inputs": {
+                    "body": "@triggerBody()",
+                    "host": {
+                        "api": {
+                            "runtimeUrl": "https://logic-apis-westeurope.azure-apim.net/apim/azureblob"
+                        },
+                        "connection": {
+                            "name": "@parameters('$connections')['/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblob']['connectionId']"
+                        }
+                    },
+                    "method": "post",
+                    "path": "/datasets/default/files",
+                    "queries": {
+                        "folderPath": "@{body('LA-1-CreateEmptyAsset')['FolderPath']}",
+                        "name": "@{triggerOutputs()['headers']['x-ms-file-name']}"
+                    }
+                },
+                "runAfter": {
+                    "LA-1-CreateEmptyAsset": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection"
+            },
+            "LA-1-CreateEmptyAsset": {
+                "inputs": {
+                    "body": {
+                        "FileName": "@{triggerOutputs()['headers']['x-ms-file-name']}"
+                    },
+                    "function": {
+                        "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-1-CreateEmptyAsset"
+                    }
+                },
+                "runAfter": {},
+                "type": "Function"
+            },
+            "LA-2-SyncAsset": {
+                "inputs": {
+                    "body": {
+                        "AssetId": "@{body('LA-1-CreateEmptyAsset')['AssetId']}"
+                    },
+                    "function": {
+                        "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-2-SyncAsset"
+                    }
+                },
+                "runAfter": {
+                    "Create_blob": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Function"
+            },
+            "LA-3-SubmitJob": {
+                "inputs": {
+                    "body": {
+                        "AssetId": "@{body('LA-1-CreateEmptyAsset')['AssetId']}",
+                        "SummarizationDuration": "0.0"
+                    },
+                    "function": {
+                        "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-3-SubmitJob"
+                    }
+                },
+                "runAfter": {
+                    "LA-2-SyncAsset": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Function"
+            },
+            "Until": {
+                "actions": {
+                    "test-jobcheck2": {
+                        "inputs": {
+                            "body": {
+                                "JobId": "@{body('LA-3-SubmitJob')['JobId']}"
+                            },
+                            "host": {
+                                "triggerName": "manual",
+                                "workflow": {
+                                    "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/WE/providers/Microsoft.Logic/workflows/test-jobcheck2"
+                                }
+                            }
+                        },
+                        "runAfter": {},
+                        "type": "Workflow"
+                    }
+                },
+                "expression": "@greater(body('test-jobcheck2')['JobState'], 2)",
+                "limit": {
+                    "count": 60,
+                    "timeout": "PT1H"
+                },
+                "runAfter": {
+                    "LA-3-SubmitJob": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Until"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "defaultValue": {},
+                "type": "Object"
+            }
+        },
+        "triggers": {
+            "When_a_file_is_created": {
+                "inputs": {
+                    "host": {
+                        "api": {
+                            "runtimeUrl": "https://logic-apis-westeurope.azure-apim.net/apim/onedrive"
+                        },
+                        "connection": {
+                            "name": "@parameters('$connections')['onedrive']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/datasets/default/triggers/onnewfile",
+                    "queries": {
+                        "folderId": "A56BE8B37BAEFEF9!282842"
+                    }
+                },
+                "metadata": {
+                    "A56BE8B37BAEFEF9!282842": "/Oslo Demo"
+                },
+                "recurrence": {
+                    "frequency": "Minute",
+                    "interval": 1
+                },
+                "type": "ApiConnection"
+            }
+        }
+    }
+}

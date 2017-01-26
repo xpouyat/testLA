@@ -1,0 +1,72 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Delay": {
+                "inputs": {
+                    "interval": {
+                        "count": 15,
+                        "unit": "Second"
+                    }
+                },
+                "runAfter": {},
+                "type": "Wait"
+            },
+            "LA-3-CheckJobStatus": {
+                "inputs": {
+                    "body": {
+                        "JobId": "@{triggerBody()['JobId']}"
+                    },
+                    "function": {
+                        "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/LA-AMS/functions/LA-3-CheckJobStatus"
+                    }
+                },
+                "runAfter": {
+                    "Delay": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Function"
+            },
+            "Response": {
+                "inputs": {
+                    "body": {
+                        "JobState": "@body('LA-3-CheckJobStatus')['JobState']"
+                    },
+                    "headers": {
+                        "content-type": "application/json"
+                    },
+                    "statusCode": 200
+                },
+                "runAfter": {
+                    "LA-3-CheckJobStatus": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "parameters": {},
+        "triggers": {
+            "manual": {
+                "inputs": {
+                    "schema": {
+                        "properties": {
+                            "JobId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "JobId"
+                        ],
+                        "type": "object"
+                    }
+                },
+                "kind": "Http",
+                "type": "Request"
+            }
+        }
+    }
+}
