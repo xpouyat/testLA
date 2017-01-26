@@ -1,0 +1,82 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+       "parameters": {
+    "logicAppName": {
+      "type": "string"
+    },
+    "functionsDeploymentResourceGroup": {
+      "type": "string"
+    },
+    "functionsDeploymentName": {
+      "type": "string"
+    }
+  },
+        "actions": {
+            "Delay": {
+                "inputs": {
+                    "interval": {
+                        "count": 15,
+                        "unit": "Second"
+                    }
+                },
+                "runAfter": {},
+                "type": "Wait"
+            },
+            "LA-3-CheckJobStatus": {
+                "inputs": {
+                    "body": {
+                        "JobId": "@{triggerBody()['JobId']}"
+                    },
+                    "function": {
+                        "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/LA-3-CheckJobStatus')]"
+                    }
+                },
+                "runAfter": {
+                    "Delay": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Function"
+            },
+            "Response": {
+                "inputs": {
+                    "body": {
+                        "JobState": "@body('LA-3-CheckJobStatus')['JobState']"
+                    },
+                    "headers": {
+                        "content-type": "application/json"
+                    },
+                    "statusCode": 200
+                },
+                "runAfter": {
+                    "LA-3-CheckJobStatus": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "triggers": {
+            "manual": {
+                "inputs": {
+                    "schema": {
+                        "properties": {
+                            "JobId": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "JobId"
+                        ],
+                        "type": "object"
+                    }
+                },
+                "kind": "Http",
+                "type": "Request"
+            }
+        }
+    }
+}
