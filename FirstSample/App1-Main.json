@@ -6,15 +6,20 @@
                 "connectionName": "azureblob-3",
                 "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/azureblob"
             },
+            "bitly": {
+                "connectionId": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/connections/bitly-1",
+                "connectionName": "bitly-1",
+                "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/bitly"
+            },
+            "office365": {
+                "connectionId": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/connections/office365-1",
+                "connectionName": "office365-1",
+                "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/office365"
+            },
             "onedrive": {
                 "connectionId": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/connections/onedrive-1",
                 "connectionName": "onedrive-1",
                 "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/onedrive"
-            },
-            "twilio": {
-                "connectionId": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/connections/twilio-1",
-                "connectionName": "twilio-1",
-                "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/providers/Microsoft.Web/locations/westeurope/managedApis/twilio"
             }
         }
     },
@@ -23,10 +28,33 @@
         "actions": {
             "Condition": {
                 "actions": {
+                    "Create_a_bitlink": {
+                        "inputs": {
+                            "host": {
+                                "api": {
+                                    "runtimeUrl": "https://logic-apis-westeurope.azure-apim.net/apim/bitly"
+                                },
+                                "connection": {
+                                    "name": "@parameters('$connections')['bitly']['connectionId']"
+                                }
+                            },
+                            "method": "get",
+                            "path": "/shorten",
+                            "queries": {
+                                "longUrl": "@{body('LA-5-Publish')['PlayerUrl']}"
+                            }
+                        },
+                        "runAfter": {
+                            "LA-5-Publish": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "ApiConnection"
+                    },
                     "LA-5-Publish": {
                         "inputs": {
                             "body": {
-                                "AssetId": "@{body('LA-3-SubmitJob')['OutputAssetId']}"
+                                "AssetId": "@{body('LA-3-SubmitJob')['OutputAssetMESId']}"
                             },
                             "function": {
                                 "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-5-Publish"
@@ -35,33 +63,33 @@
                         "runAfter": {},
                         "type": "Function"
                     },
-                    "Send_Text_Message_(SMS)": {
+                    "Send_an_email": {
                         "inputs": {
                             "body": {
-                                "body": "Video encoded. Playback link: @{body('LA-5-Publish')['PlayerUrl']}",
-                                "from": "+1 415-941-6536         ",
-                                "to": "+33664406536"
+                                "Body": "Playback : @{body('Create_a_bitlink')['url']}\nThumbnail : @{body('LA-5-Publish')['PathUrl']}Thumbnail_000001.png",
+                                "Subject": "Video is encoded",
+                                "To": "xpouyat@microsoft.com"
                             },
                             "host": {
                                 "api": {
-                                    "runtimeUrl": "https://logic-apis-westeurope.azure-apim.net/apim/twilio"
+                                    "runtimeUrl": "https://logic-apis-westeurope.azure-apim.net/apim/office365"
                                 },
                                 "connection": {
-                                    "name": "@parameters('$connections')['twilio']['connectionId']"
+                                    "name": "@parameters('$connections')['office365']['connectionId']"
                                 }
                             },
                             "method": "post",
-                            "path": "/Messages.json"
+                            "path": "/Mail"
                         },
                         "runAfter": {
-                            "LA-5-Publish": [
+                            "Create_a_bitlink": [
                                 "Succeeded"
                             ]
                         },
                         "type": "ApiConnection"
                     }
                 },
-                "expression": "@equals(body('test-jobcheck2')['JobState'], 3)",
+                "expression": "@equals(body('LA-4-CheckJobStatus')['JobState'], 3)",
                 "runAfter": {
                     "Until": [
                         "Succeeded"
@@ -126,6 +154,7 @@
                 "inputs": {
                     "body": {
                         "AssetId": "@{body('LA-1-CreateEmptyAsset')['AssetId']}",
+                        "MESPreset": "H264 Multiple Bitrate 720p with thumbnail.json",
                         "SummarizationDuration": "0.0"
                     },
                     "function": {
@@ -141,23 +170,20 @@
             },
             "Until": {
                 "actions": {
-                    "test-jobcheck2": {
+                    "LA-4-CheckJobStatus": {
                         "inputs": {
                             "body": {
                                 "JobId": "@{body('LA-3-SubmitJob')['JobId']}"
                             },
-                            "host": {
-                                "triggerName": "manual",
-                                "workflow": {
-                                    "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/WE/providers/Microsoft.Logic/workflows/test-jobcheck2"
-                                }
+                            "function": {
+                                "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-4-CheckJobStatus"
                             }
                         },
                         "runAfter": {},
-                        "type": "Workflow"
+                        "type": "Function"
                     }
                 },
-                "expression": "@greater(body('test-jobcheck2')['JobState'], 2)",
+                "expression": "@greater(body('LA-4-CheckJobStatus')['JobState'], 2)",
                 "limit": {
                     "count": 60,
                     "timeout": "PT1H"
