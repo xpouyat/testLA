@@ -84,14 +84,14 @@
         "definition": {
           "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
           "actions": {
-            "LA-1-CreateEmptyAsset": {
+            "1-create-empty-asset": {
               "type": "Function",
               "inputs": {
                 "body": {
                   "fileName": "@{triggerOutputs()['headers']['x-ms-file-name']}"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-1-CreateEmptyAsset"
+                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/1-create-empty-asset"
                 }
               },
               "runAfter": {}
@@ -110,25 +110,25 @@
                 "method": "post",
                 "path": "/datasets/default/files",
                 "queries": {
-                  "folderPath": "@{body('LA-1-CreateEmptyAsset')['FolderPath']}",
+                  "folderPath": "@{body('1-create-empty-asset')['containerPath']}",
                   "name": "@{triggerOutputs()['headers']['x-ms-file-name']}"
                 },
                 "body": "@triggerBody()"
               },
               "runAfter": {
-                "LA-1-CreateEmptyAsset": [
+                "1-create-empty-asset": [
                   "Succeeded"
                 ]
               }
             },
-            "LA-2-SyncAsset": {
+            "2-sync-asset": {
               "type": "Function",
               "inputs": {
                 "body": {
-                  "assetId": "@{body('LA-1-CreateEmptyAsset')['assetId']}"
+                  "assetId": "@{body('1-create-empty-asset')['assetId']}"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/LA-2-SyncAsset"
+                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/2-sync-asset"
                 }
               },
               "runAfter": {
