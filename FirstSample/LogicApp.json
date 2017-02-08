@@ -136,6 +136,61 @@
                   "Succeeded"
                 ]
               }
+            },
+            "submit-job": {
+              "type": "Function",
+              "inputs": {
+                "body": {
+                  "assetId:": "@{body('create-empty-asset')['assetId']}",
+                  "mesPreset": "H264 Multiple Bitrate 720p with thumbnail.json",
+                  "indexV2Language": "EnUs"
+                },
+                "function": {
+                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/submit-job"
+                }
+              },
+              "runAfter": {
+                "sync-asset": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Until": {
+              "type": "Until",
+              "expression": "@greater(body('check-job-status')['jobState'], 2)",
+              "limit": {
+                "count": 60,
+                "timeout": "PT1H"
+              },
+              "actions": {
+                "check-job-status": {
+                  "type": "Function",
+                  "inputs": {
+                    "body": {
+                      "JobId": "@{body('submit-job')['jobId']}"
+                    },
+                    "function": {
+                      "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/check-job-status"
+                    }
+                  },
+                  "runAfter": {}
+                }
+              },
+              "runAfter": {
+                "submit-job": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Condition": {
+              "type": "If",
+              "expression": "@equals(body('check-job-status')['jobStatus'], 3)",
+              "actions": {},
+              "runAfter": {
+                "Until": [
+                  "Succeeded"
+                ]
+              }
             }
           },
           "parameters": {
