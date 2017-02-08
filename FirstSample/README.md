@@ -1,5 +1,5 @@
 # media-services-dotnet-logic-apps-integration
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fxpouyat%2FtestLA%2Fmaster%2FFirstSample%2Fazuredeploay-main.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fxpouyat%2FtestLA%2Fmaster%2FFirstSample%2FLogicApp.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
