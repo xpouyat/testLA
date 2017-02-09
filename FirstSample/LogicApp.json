@@ -67,7 +67,14 @@
       "type": "securestring",
       "metadata": {
         "description": "Specify a valid primary/secondary storage account access key."
-      }
+      },
+       "functionsDeploymentResourceGroup": {
+      "type": "string"
+    },
+    "functionsDeploymentName": {
+      "type": "string"
+    }
+
     }
   },
   "variables": {},
@@ -91,7 +98,7 @@
                   "fileName": "@{triggerOutputs()['headers']['x-ms-file-name']}"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/amsfunctions/providers/Microsoft.Web/sites/AMSFunctions/functions/create-empty-asset"
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/create-empty-asset')]"
                 }
               },
               "runAfter": {}
@@ -167,7 +174,7 @@
                   "type": "Function",
                   "inputs": {
                     "body": {
-                      "JobId": "@{body('submit-job')['jobId']}"
+                      "jobId": "@{body('submit-job')['jobId']}"
                     },
                     "function": {
                       "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/amsfunctions/providers/Microsoft.Web/sites/AMSFunctions/functions/check-job-status"
