@@ -71,12 +71,16 @@
     },
     "functionsDeploymentResourceGroup": {
       "type": "string",
-       "metadata": {
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
         "description": "Name of deployment resource used by the functions."
       }
     },
     "functionsDeploymentName": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
       "metadata": {
         "description": "Name of deployment of the functions."
       }
