@@ -91,7 +91,7 @@
                   "fileName": "@{triggerOutputs()['headers']['x-ms-file-name']}"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/create-empty-asset"
+                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/amsfunctions/providers/Microsoft.Web/sites/AMSFunctions/functions/create-empty-asset"
                 }
               },
               "runAfter": {}
@@ -128,7 +128,7 @@
                   "assetId": "@{body('create-empty-asset')['assetId']}"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/sync-asset"
+                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/amsfunctions/providers/Microsoft.Web/sites/AMSFunctions/functions/sync-asset"
                 }
               },
               "runAfter": {
@@ -141,12 +141,12 @@
               "type": "Function",
               "inputs": {
                 "body": {
-                  "assetId:": "@{body('create-empty-asset')['assetId']}",
+                  "assetId": "@{body('create-empty-asset')['assetId']}",
                   "mesPreset": "H264 Multiple Bitrate 720p with thumbnail.json",
                   "indexV2Language": "EnUs"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/submit-job"
+                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/amsfunctions/providers/Microsoft.Web/sites/AMSFunctions/functions/submit-job"
                 }
               },
               "runAfter": {
@@ -170,7 +170,7 @@
                       "JobId": "@{body('submit-job')['jobId']}"
                     },
                     "function": {
-                      "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/test/providers/Microsoft.Web/sites/mediaservicesxp3/functions/check-job-status"
+                      "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/amsfunctions/providers/Microsoft.Web/sites/AMSFunctions/functions/check-job-status"
                     }
                   },
                   "runAfter": {}
@@ -184,7 +184,7 @@
             },
             "Condition": {
               "type": "If",
-              "expression": "@equals(body('check-job-status')['jobStatus'], 3)",
+              "expression": "@equals(body('check-job-status')['jobState'], 3)",
               "actions": {},
               "runAfter": {
                 "Until": [
