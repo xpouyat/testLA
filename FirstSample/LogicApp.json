@@ -69,7 +69,7 @@
         "description": "Specify a valid primary/secondary storage account access key."
       }
     },
-       "functionsDeploymentResourceGroup": {
+    "functionsDeploymentResourceGroup": {
       "type": "string"
     },
     "functionsDeploymentName": {
@@ -134,7 +134,7 @@
                   "assetId": "@{body('create-empty-asset')['assetId']}"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/amsfunctions/providers/Microsoft.Web/sites/AMSFunctions/functions/sync-asset"
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/sync-asset')]"
                 }
               },
               "runAfter": {
@@ -152,7 +152,7 @@
                   "indexV2Language": "EnUs"
                 },
                 "function": {
-                  "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/amsfunctions/providers/Microsoft.Web/sites/AMSFunctions/functions/submit-job"
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/submit-job')]"
                 }
               },
               "runAfter": {
@@ -176,7 +176,7 @@
                       "jobId": "@{body('submit-job')['jobId']}"
                     },
                     "function": {
-                      "id": "/subscriptions/28a75405-95db-4d15-9a7f-ab84003a63aa/resourceGroups/amsfunctions/providers/Microsoft.Web/sites/AMSFunctions/functions/check-job-status"
+                      "id": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('functionsDeploymentResourceGroup'), '/providers/Microsoft.Web/sites/', parameters('functionsDeploymentName'), '/functions/check-job-status')]"
                     }
                   },
                   "runAfter": {}
