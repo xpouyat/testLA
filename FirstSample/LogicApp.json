@@ -46,7 +46,7 @@
     },
     "onedrive_1_Connection_DisplayName": {
       "type": "string",
-      "defaultValue": "xpouyat@hotmail.com"
+      "defaultValue": "user@hotmail.com"
     },
     "azureblob_1_Connection_Name": {
       "type": "string",
@@ -54,7 +54,7 @@
     },
     "azureblob_1_Connection_DisplayName": {
       "type": "string",
-      "defaultValue": "xpouyatdemoamsstorage"
+      "defaultValue": "demoamsstorage"
     },
     "azureblob_1_accountName": {
       "type": "string",
@@ -70,10 +70,16 @@
       }
     },
     "functionsDeploymentResourceGroup": {
-      "type": "string"
+      "type": "string",
+       "metadata": {
+        "description": "Name of deployment resource used by the functions."
+      }
     },
     "functionsDeploymentName": {
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "Name of deployment of the functions."
+      }
     }
   },
   "variables": {},
