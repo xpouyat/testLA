@@ -67,14 +67,13 @@
       "type": "securestring",
       "metadata": {
         "description": "Specify a valid primary/secondary storage account access key."
-      },
+      }
+    },
        "functionsDeploymentResourceGroup": {
       "type": "string"
     },
     "functionsDeploymentName": {
       "type": "string"
-    }
-
     }
   },
   "variables": {},
